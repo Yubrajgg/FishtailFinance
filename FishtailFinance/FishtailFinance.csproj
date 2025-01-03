@@ -58,11 +58,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Content Include="Components\Pages\Alert.razor.css" />
-      <Content Include="Components\Pages\AlertWithCallBack.razor.css" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="$(MauiVersion)" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="$(MauiVersion)" />

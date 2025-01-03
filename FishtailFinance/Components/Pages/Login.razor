@@ -4,7 +4,7 @@
 <center><h3>Login</h3></center>
 
 <form @onsubmit="LoginHandler">
-    <p>Enter ID:  <input type="text" @bind="userID" /></p>
+    <p>Enter Username:  <input type="text" @bind="username" /></p>
     <br />
     <p>Enter Password: <input type="password" @bind="passwordValue" /></p>
     <button type="submit">Login</button>
@@ -25,7 +25,7 @@
     <AlertWithCallBack WhileClickingOKButton="OkayButtonPressed">
         <Message>
             <p><strong>ERROR!</strong></p>
-            <p>Incorrect ID or Password!</p>
+            <p>Invalid Username or Password!</p>
         </Message>
     </AlertWithCallBack>
 
@@ -33,15 +33,15 @@
 
 
 @code {
-    private string? userID { get; set; }
+    private string? username { get; set; }
     private string? passwordValue { get; set; }
     private bool ShowLoginFailedAlert = false;
 
     private void LoginHandler()
     {
-        if (userID == "mahesh" && passwordValue == "1234")
+        if (username == "admin" && passwordValue == "admin")
         {
-            NavManager.NavigateTo("/welcome");
+            NavManager.NavigateTo("/index");
         }
         else
         {
@@ -51,7 +51,7 @@
 
     private void OkayButtonPressed()
     {
-        userID = null;
+        username = null;
         passwordValue = null;
         ShowLoginFailedAlert = false;
     }
