@@ -1,0 +1,60 @@
+﻿@page "/login"
+@inject NavigationManager NavManager
+
+<center><h3>Login</h3></center>
+
+<form @onsubmit="LoginHandler">
+    <p>Enter ID:  <input type="text" @bind="userID" /></p>
+    <br />
+    <p>Enter Password: <input type="password" @bind="passwordValue" /></p>
+    <button type="submit">Login</button>
+</form>
+@* 
+@if (ShowLoginFailedAlert)
+{
+    <Alert>
+        <Message>
+            <p><strong>ERROR!</strong></p>
+            <p>Incorrect ID or Password!</p>
+        </Message>
+    </Alert>
+} *@
+
+@if (ShowLoginFailedAlert)
+{
+    <AlertWithCallBack WhileClickingOKButton="OkayButtonPressed">
+        <Message>
+            <p><strong>ERROR!</strong></p>
+            <p>Incorrect ID or Password!</p>
+        </Message>
+    </AlertWithCallBack>
+
+}
+
+
+@code {
+    private string? userID { get; set; }
+    private string? passwordValue { get; set; }
+    private bool ShowLoginFailedAlert = false;
+
+    private void LoginHandler()
+    {
+        if (userID == "mahesh" && passwordValue == "1234")
+        {
+            NavManager.NavigateTo("/welcome");
+        }
+        else
+        {
+            ShowLoginFailedAlert = true;
+        }
+    }
+
+    private void OkayButtonPressed()
+    {
+        userID = null;
+        passwordValue = null;
+        ShowLoginFailedAlert = false;
+    }
+
+}
+
