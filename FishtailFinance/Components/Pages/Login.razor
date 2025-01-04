@@ -1,4 +1,4 @@
-﻿@page "/login"
+﻿@page "/"
 @inject NavigationManager NavManager
 
 <center><h3>Login</h3></center>
@@ -6,7 +6,7 @@
 <form @onsubmit="LoginHandler">
     <p>Enter Username:  <input type="text" @bind="username" /></p>
     <br />
-    <p>Enter Password: <input type="password" @bind="passwordValue" /></p>
+    <p>Enter Password: <input type="password" @bind="password" /></p>
     <button type="submit">Login</button>
 </form>
 @* 
@@ -34,14 +34,14 @@
 
 @code {
     private string? username { get; set; }
-    private string? passwordValue { get; set; }
+    private string? password { get; set; }
     private bool ShowLoginFailedAlert = false;
 
     private void LoginHandler()
     {
-        if (username == "admin" && passwordValue == "admin")
+        if (username == "admin" && password == "admin")
         {
-            NavManager.NavigateTo("/index");
+            NavManager.NavigateTo("/welcome");
         }
         else
         {
@@ -52,7 +52,7 @@
     private void OkayButtonPressed()
     {
         username = null;
-        passwordValue = null;
+        password = null;
         ShowLoginFailedAlert = false;
     }
 
