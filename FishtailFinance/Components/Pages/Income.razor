@@ -3,7 +3,7 @@
 
 <h3>Add Income</h3>
 
-<NavLink href="/transaction"><button>Back</button></NavLink>
+<NavLink href="/transaction"><button>Back</button></NavLink> @* to navigate to transaction page *@
 
 <EditForm Model="transaction" OnValidSubmit="AddIncome">
     <div class="form-group">
@@ -34,16 +34,21 @@
 </EditForm>
 
 @code {
+    //object to hold the current income data being entered
     private Transaction transaction = new Transaction();
+
+    //list to store all income transactions loaded from or saved to the file
     private List<Transaction> transactions = new List<Transaction>();
 
+    //method to add a new income transaction to the list and save to file
     private void AddIncome()
     {
         transactions.Add(transaction);
-        transaction = new Transaction();
+        transaction = new Transaction(); //clear the form after adding income
         SaveTransactionsToFile();
     }
 
+    //method to save the list of income transactions to a JSON file
     private void SaveTransactionsToFile()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
@@ -51,9 +56,10 @@
         File.WriteAllText(path, json);
     }
 
+    //load income transactions from the JSON file on component initialization
     protected override void OnInitialized()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
@@ -68,6 +74,5 @@
         public string Category { get; set; }
         public string Tags { get; set; }
         public string Note { get; set; }
-        
     }
 }

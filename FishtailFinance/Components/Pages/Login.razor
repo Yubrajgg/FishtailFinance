@@ -1,36 +1,28 @@
 ﻿@page "/"
 @inject NavigationManager NavManager
 
-<center><h3>Fishtail Finance, Please Login.</h3></center>
+<body>
+    <center> <h3>Welcome To Fishtail finance, Please Login.</h3></center>
+    <center>
+        <form @onsubmit="LoginHandler">
+            <p>Username:  <input type="text" @bind="username" placeholder="Enter Username" /></p>
+            <br />
+            <p>Password: <input type="password" @bind="password" placeholder="Enter Password" /></p>
+            <button type="submit">Login</button>
+        </form>
+    </center>
 
-<form @onsubmit="LoginHandler">
-    <p>Username:  <input type="text" @bind="username" placeholder="Enter Username" /></p>
-    <br />
-    <p>Password: <input type="password" @bind="password" placeholder="Enter Password" /></p>
-    <button type="submit">Login</button>
-</form>
-@* 
-@if (ShowLoginFailedAlert)
-{
-    <Alert>
-        <Message>
-            <p><strong>ERROR!</strong></p>
-            <p>Incorrect ID or Password!</p>
-        </Message>
-    </Alert>
-} *@
+    @if (ShowLoginFailedAlert)
+    {
+            <AlertWithCallBack WhileClickingOKButton="OkayButtonPressed">
+                <Message>
+                    <p><strong>ERROR!</strong></p>
+                    <p>Invalid Username or Password!</p>
+                </Message>
+            </AlertWithCallBack>
 
-@if (ShowLoginFailedAlert)
-{
-    <AlertWithCallBack WhileClickingOKButton="OkayButtonPressed">
-        <Message>
-            <p><strong>ERROR!</strong></p>
-            <p>Invalid Username or Password!</p>
-        </Message>
-    </AlertWithCallBack>
-
-}
-
+    }
+</body>
 
 @code {
     private string? username { get; set; }

@@ -1,8 +1,8 @@
 ﻿@page "/expense"
 @using System.Text.Json
-<h3>Add Expense</h3>
 
-<NavLink href="/transaction"><button>Back</button></NavLink>
+<h3>Add Expense</h3>
+<NavLink href="/transaction"><button>Back</button></NavLink> <!-- navigate to the transaction page -->
 
 <EditForm Model="transaction" OnValidSubmit="AddExpense">
     <div class="form-group">
@@ -28,27 +28,64 @@
     <button type="submit" class="btn btn-primary">Add Expense</button>
 </EditForm>
 
+<h3>Expense History</h3>
+
+@if (transactions != null && transactions.Count > 0) @* to display the expense history *@
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Date</th>
+                <th>Category</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var expense in transactions)
+            {
+                <tr>
+                    <td>@expense.Amount</td>
+                    <td>@expense.DoT.ToShortDateString()</td>
+                    <td>@expense.Category</td>
+                    <td>@expense.Note</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No expenses recorded yet.</p>
+}
+
 @code {
+    //object to hold the current expense data which is entered
     private Transaction transaction = new Transaction();
+
+    //list to store all expense transactions loaded saved to the file
     private List<Transaction> transactions = new List<Transaction>();
 
+    //method to add a new expense transaction to the list and save to file
     private void AddExpense()
     {
         transactions.Add(transaction);
-        transaction = new Transaction();
+        transaction = new Transaction(); //clear the form after adding an expense
         SaveTransactionsToFile();
     }
 
+    //method to save the list of expense transactions to a JSON file
     private void SaveTransactionsToFile()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
         var json = JsonSerializer.Serialize(transactions);
         File.WriteAllText(path, json);
     }
 
+    //load expense transactions from the JSON file on component initialization
     protected override void OnInitialized()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
@@ -56,6 +93,7 @@
         }
     }
 
+    //class to represent an expense transaction
     public class Transaction
     {
         public int Amount { get; set; }

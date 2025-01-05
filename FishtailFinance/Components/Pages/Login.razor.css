@@ -1,43 +1,38 @@
-﻿/* General Styles */
-body {
-    font-family: sans-serif; /* Choose a suitable font */
-    background-color: #121C21; /* Dark background color */
-    color: #fff; /* Text color */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    margin: 0;
+﻿body {
+    background-color: #08212D; /* Dark background color */
+    font-family: sans-serif;
 }
 
-/* Form Styling */
+h3 {
+    color: #fff; /* White text color */
+    margin-top: 50px; /* Add some top margin */
+}
+
 form {
-    background-color: #08212D; /* Slightly lighter background for form */
-    text-decoration-color:#fff;
+    background-color: #121C21; /* Darker background for the form */
     padding: 20px;
     border-radius: 5px;
 }
 
-    form .p {
-        color: #ffff;
-        margin-bottom: 5px; /* Add margin-bottom for spacing */
-    }
-
-/* Input Fields */
-input[type="text"],
-input[type="password"] {
-    width: 250px;
-    padding: 10px;
-    margin: 0; /* Remove default margin */
-    border: 1px solid #444;
-    border-radius: 3px;
-    background-color: #263845;
-    color: #ffff;
+p {
+    color: #fff; /* White text color */
+    margin: 10px 0;
 }
 
-/* Button Styling */
+
+
+input[type="text"],
+input[type="password"] {
+    color: #94B2C7;
+    width: 250px;
+    padding: 10px;
+    border: 1px solid #555;
+    border-radius: 3px;
+    background-color: #263845; /* Darker background for input fields */
+}
+
 button[type="submit"] {
-    background-color: #228A1A; /* Green button color */
+    background-color: #228A1A; /* Blue button color */
     color: #fff;
     padding: 10px 20px;
     border: none;
@@ -45,7 +40,6 @@ button[type="submit"] {
     cursor: pointer;
 }
 
-/* Placeholder Text */
-::placeholder {
-    color: #888; /* Placeholder color */
-}
+    button[type="submit"]:hover {
+        background-color: #20741A; /* Slightly darker blue on hover */
+    }

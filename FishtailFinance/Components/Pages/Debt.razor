@@ -2,10 +2,10 @@
 @using System.Text.Json
 @using System.Linq
 
-<h3>Debts</h3>
-<NavLink href="/transaction"><button>Back</button></NavLink>
+<h1>Debts</h1>
+<NavLink href="/transaction"><button>Back</button></NavLink> @* navigate to the transaction page *@
 
-<h3>Add Debt</h3>
+<h2>Add Debt</h2>
 
 <EditForm Model="debt" OnValidSubmit="AddDebt">
     <div class="form-group">
@@ -35,7 +35,7 @@
     <button type="submit" class="btn btn-primary">Add Debt</button>
 </EditForm>
 
-@if (debts != null && debts.Count > 0)
+@if (debts != null && debts.Count > 0) @* code to display the debt history *@
 {
     <h3>Debt History</h3>
     <table>
@@ -61,7 +61,7 @@
                     <td>@debt.DueDate.ToString("yyyy-mm-dd")</td>
                     <td>@debt.Note</td>
                     <td>
-                        <button class="btn btn-payoff" @onclick="() => ClearDebt(debt)">Pay Off</button> @* this button helps to clear the debts *@
+                        <button class="btn btn-payoff" style="background-color: #263845; color: white;" @onclick="() => ClearDebt(debt)">Pay Off</button>
                     </td>
                 </tr>
             }
@@ -70,23 +70,28 @@
 }
 
 @code {
+    //object to hold the current debt being added
     private Debts debt = new Debts();
 
+    //list to store all debts loaded from or saved to the file
     private List<Debts> debts = new List<Debts>();
 
+    //method to add a new debt to the list and save to the file
     private void AddDebt()
     {
         debts.Add(debt);
-        debt = new Debts();
+        debt = new Debts(); // Clear the form fields after adding
         SaveDebtsToFile();
     }
 
+    //method to remove a debt from the list and save the changes to the file
     private void ClearDebt(Debts debtToClear)
     {
         debts.Remove(debtToClear);
         SaveDebtsToFile();
     }
 
+    //method to save the list of debts to the JSON file
     private void SaveDebtsToFile()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
@@ -94,6 +99,7 @@
         File.WriteAllText(path, json);
     }
 
+    //load debts from the JSON file on component initialization
     protected override void OnInitialized()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
