@@ -3,8 +3,9 @@
 @using System.Text.Json
 
 <h3>Dashboard</h3>
-<NavLink href="/transaction"><button>Back</button></NavLink> @* naviagates to transaction page *@
-@if (transactions != null && transactions.Count > 0) @* to income histor *@y
+<NavLink href="/transaction"><button>Back</button></NavLink>
+
+@if (transactions != null && transactions.Count > 0)
 {
     <h3>Income History</h3>
     <table class="table">
@@ -38,36 +39,25 @@
 <p>Account Balance: @accountBalance</p>
 
 @code {
-    //list to store transaction data loaded from JSON file
     private List<Transaction> transactions = new List<Transaction>();
-
-    //account balance variable
     private decimal accountBalance = 0;
-
-    //properties to store highest and lowest income amounts
     public decimal HighestInflow { get; set; }
     public decimal LowestInflow { get; set; }
 
     protected override void OnInitialized()
     {
-        //get the path to the transactions.json file
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
-
-        //check if the file exists
         if (File.Exists(path))
         {
-            //read the JSON content from the file
             var json = File.ReadAllText(path);
-
-            //deserialize the JSON content into a list of Transaction objects
             transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
         }
 
-        //calculate the highest and lowest income amounts from transactions with positive amounts
+        // Calculate highest and lowest income
         HighestInflow = transactions.Where(t => t.Amount > 0).Max(t => t.Amount);
         LowestInflow = transactions.Where(t => t.Amount > 0).Min(t => t.Amount);
 
-        //calculate the account balance by summing the amounts of income transactions
+        // Adds initial balance from income transactions
         accountBalance = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
     }
 
