@@ -1,4 +1,135 @@
 ﻿@page "/debt"
-<h3>Debt</h3>
+@using System.Text.Json
+@using System.Linq
+
+<h3>Debts</h3>
 <NavLink href="/transaction"><button>Back</button></NavLink>
 
+<h3>Add Debt</h3>
+
+<EditForm Model="debt" OnValidSubmit="AddDebt">
+    <div class="form-group">
+        <label for="amount">Amount:</label>
+        <InputNumber @bind-Value="debt.Amount" id="amount" />
+    </div>
+    <div class="form-group">
+        <label for="date">Date of Debt:</label>
+        <InputDate @bind-Value="debt.DoD" id="date" />
+    </div>
+    <div class="form-group">
+        <label for="creditor">Creditor:</label>
+        <InputText @bind-Value="debt.Creditor" id="creditor" />
+    </div>
+    <div class="form-group">
+        <label for="interestRate">Interest Rate (optional):</label>
+        <InputNumber @bind-Value="debt.InterestRate" id="interestRate" />
+    </div>
+    <div class="form-group">
+        <label for="dueDate">Due Date:</label>
+        <InputDate @bind-Value="debt.DueDate" id="dueDate" />
+    </div>
+    <div class="form-group">
+        <label for="note">Note:</label>
+        <InputText @bind-Value="debt.Note" id="note" />
+    </div>
+    <button type="submit" class="btn btn-primary">Add Debt</button>
+</EditForm>
+
+@if (debts != null && debts.Count > 0)
+{
+    <h3>Debt History</h3>
+    <table>
+       <thead>
+          <tr>
+               <th>Amount</th>
+               <th>Date of Debt</th>
+               <th>Creditor</th>
+               <th>Interest Rate</th>
+                <th>Due Date</th>
+               <th>Note</th>
+                <th>Status</th>
+                <th>Remaining Amount</th>
+           </tr>
+       </thead>
+        <tbody>
+            @foreach (var debt in debts)
+            {
+                <tr>
+                    <td>@debt.Amount</td>
+                    <td>@debt.DoD.ToString("yyyy-mm-dd")</td>
+                    <td>@debt.Creditor</td>
+                    <td>@debt.InterestRate.ToString("P")</td>
+                    <td>@debt.DueDate.ToString("yyyy-mm-dd")</td>
+                    <td>@debt.Note</td>
+                    <td>@GetDebtStatus(debt)</td>
+                    <td>@debt.ClearedAmount</td>
+                    <td>@GetRemainingAmount(debt)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Debts debt = new Debts();
+    //Initialize a new debt object for data entry
+
+    private List<Debts> debts = new List<Debts>();
+    //list to store all debts
+
+    private void AddDebt()
+    {
+        debts.Add(debt); //Add the new debt to the list
+        debt = new Debts(); //Create a new empty debt object for the next entry
+        SaveDebtsToFile(); //Save the updated debt list to the file
+    }
+
+    private void SaveDebtsToFile()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
+        //Construct the file path for saving debts
+        var json = JsonSerializer.Serialize(debts); //Serialize the debts list to JSON format
+        File.WriteAllText(path, json); //Write the JSON data to the file
+    }
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path); //Read the JSON data from the file
+            debts = JsonSerializer.Deserialize<List<Debts>>(json) ?? new List<Debts>();
+            //Deserialize the JSON data back into the debts list
+        }
+    }
+
+    private string GetDebtStatus(Debts debt)
+    {
+        if (debt.ClearedAmount >= debt.Amount)
+        {
+            return "Cleared";
+        }
+        else
+        {
+            return "Pending";
+        }
+    }
+    private decimal GetRemainingAmount(Debts debt)
+    {
+        return debt.Amount - debt.ClearedAmount;
+    }
+    public class Debts
+    {
+        public int Amount { get; set; }
+
+        //date of Debt
+        public DateTime DoD { get; set; }
+        public string Creditor { get; set; }
+        public decimal InterestRate { get; set; }
+        public DateTime DueDate { get; set; }
+        public string Note { get; set; }
+
+        //amount cleared towards the debt
+        public decimal ClearedAmount { get; set; } 
+    }
+}

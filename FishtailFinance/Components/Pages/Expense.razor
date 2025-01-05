@@ -1,3 +1,66 @@
 ﻿@page "/expense"
-<h3>Expense</h3>
-<NavLink href="/transaction"><button>Back</button></NavLink>  
+@using System.Text.Json
+<h3>Add Expense</h3>
+
+<NavLink href="/transaction"><button>Back</button></NavLink>
+
+<EditForm Model="transaction" OnValidSubmit="AddExpense">
+    <div class="form-group">
+        <label for="amount">Amount:</label>
+        <InputNumber @bind-Value="transaction.Amount" id="amount" />
+    </div>
+    <div class="form-group">
+        <label for="date">Date of Transaction:</label>
+        <InputDate @bind-Value="transaction.DoT" id="date" />
+    </div>
+    <div class="form-group">
+        <label for="category">Category:</label>
+        <InputSelect @bind-Value="transaction.Category" id="category">
+            <option value="Grocery">Grocery</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Others">Others</option>
+        </InputSelect>
+    </div>
+    <div class="form-group">
+        <label for="note">Note:</label>
+        <InputText @bind-Value="transaction.Note" id="note" />
+    </div>
+    <button type="submit" class="btn btn-primary">Add Expense</button>
+</EditForm>
+
+@code {
+    private Transaction transaction = new Transaction();
+    private List<Transaction> transactions = new List<Transaction>();
+
+    private void AddExpense()
+    {
+        transactions.Add(transaction);
+        transaction = new Transaction();
+        SaveTransactionsToFile();
+    }
+
+    private void SaveTransactionsToFile()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
+        var json = JsonSerializer.Serialize(transactions);
+        File.WriteAllText(path, json);
+    }
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path);
+            transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
+        }
+    }
+
+    public class Transaction
+    {
+        public int Amount { get; set; }
+        public DateTime DoT { get; set; }
+        public string Category { get; set; }
+        public string Note { get; set; }
+    }
+}

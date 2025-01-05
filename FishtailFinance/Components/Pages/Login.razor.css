@@ -1,0 +1,51 @@
+﻿/* General Styles */
+body {
+    font-family: sans-serif; /* Choose a suitable font */
+    background-color: #121C21; /* Dark background color */
+    color: #fff; /* Text color */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Form Styling */
+form {
+    background-color: #08212D; /* Slightly lighter background for form */
+    text-decoration-color:#fff;
+    padding: 20px;
+    border-radius: 5px;
+}
+
+    form .p {
+        color: #ffff;
+        margin-bottom: 5px; /* Add margin-bottom for spacing */
+    }
+
+/* Input Fields */
+input[type="text"],
+input[type="password"] {
+    width: 250px;
+    padding: 10px;
+    margin: 0; /* Remove default margin */
+    border: 1px solid #444;
+    border-radius: 3px;
+    background-color: #263845;
+    color: #ffff;
+}
+
+/* Button Styling */
+button[type="submit"] {
+    background-color: #228A1A; /* Green button color */
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* Placeholder Text */
+::placeholder {
+    color: #888; /* Placeholder color */
+}

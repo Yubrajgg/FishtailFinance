@@ -1,0 +1,67 @@
+﻿@page "/dashboard"
+@using System.Text.Json
+
+<h3>Dashboard</h3>
+<NavLink href="/transaction"><button>Back</button></NavLink>
+
+@if (transactions != null && transactions.Count > 0)
+{
+    <h3>Income History</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Date of transaction</th>
+                <th>Category</th>
+				<th>Tags</th>
+                <th>Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var income in transactions)
+            {
+                <tr>
+                    <td>@income.Amount</td>
+                    <td>@income.DoT.ToShortDateString()</td>
+                    <td>@income.Category</td>
+                    <td>@income.Tags</td> 
+                    <td>@income.Note</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<p>Account Balance: @accountBalance</p>
+
+
+
+@code {
+    private List<Transaction> transactions = new List<Transaction>();
+    private decimal accountBalance = 0;
+
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"transactions.json");
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path);
+            transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
+        }
+
+        // Calculate initial balance from income transactions
+        foreach (var income in transactions)
+        {
+            accountBalance += income.Amount;
+        }
+    }
+
+    public class Transaction
+    {
+        public int Amount { get; set; }
+        public DateTime DoT { get; set; }
+        public string Category { get; set; }
+        public string Tags { get; set; }
+        public string Note { get; set; }
+    }
+}

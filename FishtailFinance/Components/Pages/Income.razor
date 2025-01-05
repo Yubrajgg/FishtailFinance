@@ -4,6 +4,7 @@
 <h3>Add Income</h3>
 
 <NavLink href="/transaction"><button>Back</button></NavLink>
+
 <EditForm Model="transaction" OnValidSubmit="AddIncome">
     <div class="form-group">
         <label for="amount">Amount:</label>
@@ -22,73 +23,41 @@
         </InputSelect>
     </div>
     <div class="form-group">
+        <label for="tags">Tags:</label>
+        <InputText @bind-Value="transaction.Tags" id="tags" />
+    </div>
+    <div class="form-group">
         <label for="note">Note:</label>
         <InputText @bind-Value="transaction.Note" id="note" />
     </div>
     <button type="submit" class="btn btn-primary">Add Income</button>
 </EditForm>
 
-@if (transactions != null && transactions.Count > 0)
-{
-    <h3>Transaction History</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Amount</th>
-                <th>Date of transaction</th>
-                <th>Category</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var transaction in transactions)
-            {
-                <tr>
-                    <td>@transaction.Amount</td>
-                    <td>@transaction.DoT.ToShortDateString()</td>
-                    <td>@transaction.Category</td>
-                    <td>@transaction.Note</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-<p>Account Balance: @accountBalance</p>
-
 @code {
     private Transaction transaction = new Transaction();
     private List<Transaction> transactions = new List<Transaction>();
-    private decimal accountBalance = 0;
 
     private void AddIncome()
     {
         transactions.Add(transaction);
-        accountBalance += transaction.Amount;
         transaction = new Transaction();
         SaveTransactionsToFile();
     }
 
     private void SaveTransactionsToFile()
     {
-        var path = Path.Combine(FileSystem.AppDataDirectory, "transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
         var json = JsonSerializer.Serialize(transactions);
         File.WriteAllText(path, json);
     }
 
     protected override void OnInitialized()
     {
-        var path = Path.Combine(FileSystem.AppDataDirectory, "transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"transactions.json");
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
             transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
-        }
-
-        // Calculate initial balance from existing transactions
-        foreach (var transaction in transactions)
-        {
-            accountBalance += transaction.Amount;
         }
     }
 
@@ -97,6 +66,8 @@
         public int Amount { get; set; }
         public DateTime DoT { get; set; }
         public string Category { get; set; }
+        public string Tags { get; set; }
         public string Note { get; set; }
+        
     }
 }
