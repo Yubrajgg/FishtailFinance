@@ -1,39 +1,39 @@
-﻿@page "/dashboard"
+﻿@page "/dashboard"  
+
 @using System.Text.Json
 
-<h3>Dashboard</h3>
+<h1>Dashboard</h1>
 <NavLink href="/transaction"><button>Back</button></NavLink>
 
 @if (transactions != null && transactions.Count > 0)
 {
-    <h3>Income History</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Amount</th>
-                <th>Date of transaction</th>
-                <th>Category</th>
-				<th>Tags</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var income in transactions)
-            {
+        <h3>Income History</h3>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>@income.Amount</td>
-                    <td>@income.DoT.ToShortDateString()</td>
-                    <td>@income.Category</td>
-                    <td>@income.Tags</td> 
-                    <td>@income.Note</td>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Tags</th>
+                    <th>Note</th>
                 </tr>
+            </thead>
+            <tbody>
+            @foreach (var income in transactions.Where(t => t.Amount > 0))
+            {
+                        <tr>
+                            <td>@income.Amount</td>
+                            <td>@income.DoT.ToShortDateString()</td>
+                            <td>@income.Category</td>
+                            <td>@income.Tags</td>
+                            <td>@income.Note</td>
+                        </tr>
             }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
 }
 
 <p>Account Balance: @accountBalance</p>
-
 
 
 @code {
@@ -42,7 +42,7 @@
 
     protected override void OnInitialized()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),"transactions.json");
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
@@ -50,10 +50,7 @@
         }
 
         // Calculate initial balance from income transactions
-        foreach (var income in transactions)
-        {
-            accountBalance += income.Amount;
-        }
+        accountBalance = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
     }
 
     public class Transaction

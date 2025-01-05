@@ -39,18 +39,17 @@
 {
     <h3>Debt History</h3>
     <table>
-       <thead>
-          <tr>
-               <th>Amount</th>
-               <th>Date of Debt</th>
-               <th>Creditor</th>
-               <th>Interest Rate</th>
+        <thead>
+            <tr>
+                <th>Amount</th>
+                <th>Date of Debt</th>
+                <th>Creditor</th>
+                <th>Interest Rate</th>
                 <th>Due Date</th>
-               <th>Note</th>
-                <th>Status</th>
-                <th>Remaining Amount</th>
-           </tr>
-       </thead>
+                <th>Note</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
         <tbody>
             @foreach (var debt in debts)
             {
@@ -61,9 +60,9 @@
                     <td>@debt.InterestRate.ToString("P")</td>
                     <td>@debt.DueDate.ToString("yyyy-mm-dd")</td>
                     <td>@debt.Note</td>
-                    <td>@GetDebtStatus(debt)</td>
-                    <td>@debt.ClearedAmount</td>
-                    <td>@GetRemainingAmount(debt)</td>
+                    <td>
+                        <button class="btn btn-payoff" @onclick="() => ClearDebt(debt)">Pay Off</button> @* this button helps to clear the debts *@
+                    </td>
                 </tr>
             }
         </tbody>
@@ -72,24 +71,27 @@
 
 @code {
     private Debts debt = new Debts();
-    //Initialize a new debt object for data entry
 
     private List<Debts> debts = new List<Debts>();
-    //list to store all debts
 
     private void AddDebt()
     {
-        debts.Add(debt); //Add the new debt to the list
-        debt = new Debts(); //Create a new empty debt object for the next entry
-        SaveDebtsToFile(); //Save the updated debt list to the file
+        debts.Add(debt);
+        debt = new Debts();
+        SaveDebtsToFile();
+    }
+
+    private void ClearDebt(Debts debtToClear)
+    {
+        debts.Remove(debtToClear);
+        SaveDebtsToFile();
     }
 
     private void SaveDebtsToFile()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
-        //Construct the file path for saving debts
-        var json = JsonSerializer.Serialize(debts); //Serialize the debts list to JSON format
-        File.WriteAllText(path, json); //Write the JSON data to the file
+        var json = JsonSerializer.Serialize(debts);
+        File.WriteAllText(path, json);
     }
 
     protected override void OnInitialized()
@@ -97,39 +99,18 @@
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
         if (File.Exists(path))
         {
-            var json = File.ReadAllText(path); //Read the JSON data from the file
+            var json = File.ReadAllText(path);
             debts = JsonSerializer.Deserialize<List<Debts>>(json) ?? new List<Debts>();
-            //Deserialize the JSON data back into the debts list
         }
     }
 
-    private string GetDebtStatus(Debts debt)
-    {
-        if (debt.ClearedAmount >= debt.Amount)
-        {
-            return "Cleared";
-        }
-        else
-        {
-            return "Pending";
-        }
-    }
-    private decimal GetRemainingAmount(Debts debt)
-    {
-        return debt.Amount - debt.ClearedAmount;
-    }
     public class Debts
     {
         public int Amount { get; set; }
-
-        //date of Debt
         public DateTime DoD { get; set; }
         public string Creditor { get; set; }
         public decimal InterestRate { get; set; }
         public DateTime DueDate { get; set; }
         public string Note { get; set; }
-
-        //amount cleared towards the debt
-        public decimal ClearedAmount { get; set; } 
     }
 }
