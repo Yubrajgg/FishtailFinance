@@ -1,8 +1,64 @@
-﻿
-@page "/transaction"
+﻿@page "/transaction"
 <h3>Transaction 💰</h3>
+<div class="navigation-buttons">
+    <NavLink href="/income"><button>Add Income</button></NavLink>
+    <NavLink href="/expense"><button>Add Expense</button></NavLink>
+    <NavLink href="/debt"><button>Debts</button></NavLink>
+    <NavLink href="/welcome"><button-back>← </button-back></NavLink>
+</div>
+<style>
+    /* General Styles */
+    body {
+        font-family: sans-serif;
+        background-color: #08212D; /* Dark background */
+        color: #fff; /* White text color */
+    }
 
-<NavLink href="/income"><button>Add Income</button></NavLink>
-<NavLink href="/expense"><button>Add Expense</button></NavLink>
-<NavLink href="/debt"><button>Debts</button></NavLink>
-<NavLink href="/welcome"><button>←</button></NavLink>
+    /* Container */
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #121C21; /* Slightly lighter background for container */
+    }
+
+    /* Navigation buttons (footer) */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-around;
+        background-color: #1C2833; /* Footer background */
+        padding: 10px 0; /* Add some padding */
+        position: fixed; /* Make it fixed to the bottom */
+        top: 0; /* Position at the bottom */
+        width: 100%; /* Full width */
+    }
+
+        /* Button styles */
+        .navigation-buttons button {
+            background-color: #1C2833;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /*Add transition effect */
+        }
+
+         .navigation-buttons button:hover {
+                background-color: #1DA1F2; /* Hover color */
+            }
+   
+     button-back {
+        position: fixed;
+        top: 10px; /* Adjust top margin as needed */
+        right: 10px; /* Adjust right margin as needed */
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+
+       
+</style>

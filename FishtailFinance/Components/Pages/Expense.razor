@@ -1,137 +1,255 @@
 ﻿@page "/expense"
+@using System.Linq
 @using System.Text.Json
 
 <h3>Add Expense</h3>
-
-<NavLink href="/transaction"><button>🔙</button></NavLink>
+<NavLink href="/transaction"><button-back>Back</button-back></NavLink>
 
 <EditForm Model="transaction" OnValidSubmit="AddExpense">
-    <div class="form-group">
-        <label for="amount">Amount:</label>
-        <InputNumber @bind-Value="transaction.Amount" id="amount" />
-    </div>
-    <div class="form-group">
-        <label for="date">Date of Transaction:</label>
-        <InputDate @bind-Value="transaction.DoT" id="date" />
-    </div>
-    <div class="form-group">
-        <label for="category">Category:</label>
-        <InputSelect @bind-Value="transaction.Category" id="category">
-            <option value="Grocery">Grocery</option>
-            <option value="Furniture">Furniture</option>
-            <option value="Others">Others</option>
-        </InputSelect>
-    </div>
-    <div class="form-group">
-        <label for="note">Note:</label>
-        <InputText @bind-Value="transaction.Note" id="note" />
-    </div>
-    <button type="submit" class="btn btn-primary">Add Expense</button>
+  <div class="form-group">
+    <label for="amount">Expense Amount:</label>
+    <InputNumber @bind-Value="transaction.Amount" id="amount" placeholder="Enter amount" />
+  </div>
+  <div class="form-group">
+    <label for="date">Date of Expense:</label>
+    <InputDate @bind-Value="transaction.DoT" id="date" />
+  </div>
+  <div class="form-group">
+    <label for="category">Expense Category:</label>
+    <InputSelect @bind-Value="transaction.Category" id="category">
+      <option value="Bills">Bills</option>
+      <option value="Shopping">Shopping</option>
+      <option value="Entertainment">Entertainment</option>
+      <option value="Food">Food</option>
+      <option value="Transportation">Transportation</option>
+      <option value="Others">Others</option>
+    </InputSelect>
+  </div>
+  <div class="form-group">
+    <label for="tags">Expense Tags:</label>
+    <InputSelect @bind-Value="transaction.Tags" id="tags">
+      <option value="">Select Tags (Optional)</option>
+      <option value="Personal">Personal</option>
+      <option value="Business">Business</option>
+      <option value="Others">Others</option>
+    </InputSelect>
+  </div>
+  <div class="form-group">
+    <label for="note">Expense Note:</label>
+    <InputText @bind-Value="transaction.Note" id="note" placeholder="(Optional)" />
+  </div>
+  <button type="submit" class="btn btn-primary">Add Expense</button>
 </EditForm>
 
 <h3>Expense History</h3>
 
-@if (transactions != null && transactions.Count > 0)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var expense in transactions)
-            {
-                <tr>
-                    <td>@expense.Amount</td>
-                    <td>@expense.DoT.ToShortDateString()</td>
-                    <td>@expense.Category</td>
-                    <td>@expense.Note</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <p>No expenses recorded yet.</p>
-}
+<div class="filter-container">
+  <label for="tagFilter">Tag:</label>
+  <select @bind="tagFilter" id="tagFilter">
+    <option value="">All Tags</option>
+        @foreach (var tag in transactions.Select(t => t.Tags).Distinct())
+        {
+          <option value="@tag">@tag</option>
+        }
+  </select>
 
-<h3>Highest Expense: Nrs.@HighestExpenseAmount</h3>
-<h3>Lowest Expense: Nrs.@LowestExpenseAmount</h3>
+  <label for="categoryFilter">Category:</label>
+  <select @bind="categoryFilter" id="categoryFilter">
+    <option value="">All Categories</option>
+    <option value="Bills">Bills</option>
+    <option value="Shopping">Shopping</option>
+    <option value="Entertainment">Entertainment</option>
+    <option value="Food">Food</option>
+    <option value="Transportation">Transportation</option>
+    <option value="Others">Others</option>
+  </select>
+</div>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Amount</th>
+      <th>Date</th>
+      <th>Category</th>
+      <th>Tags</th>
+      <th>Note</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+        @foreach (var expense in transactions.Where(t =>
+         (string.IsNullOrEmpty(tagFilter) || t.Tags == tagFilter) &&
+         (string.IsNullOrEmpty(categoryFilter) || t.Category == categoryFilter)))
+        {
+          <tr>
+            <td>@expense.Amount</td>
+            <td>@expense.DoT.ToString("yyyy-MM-dd")</td>
+            <td>@expense.Category</td>
+            <td>@expense.Tags</td>
+            <td>@expense.Note</td>
+            <td><button-delete @onclick="@(() => DeleteExpense(expense))">✖ </button-delete></td>
+          </tr>
+        }
+  </tbody>
+</table>
+
+<p>Total Expenses: Nrs.@totalExpense</p>
 
 @code {
-    // This class represents a single expense transaction
-    // with properties for Amount, Date of Transaction (DoT),
-    // Category, and a Note
+    // Represents a single expense transaction with its details
+    private ExpenseTransaction transaction = new ExpenseTransaction();
+
+    // List to store all recorded expense transactions
+    private List<ExpenseTransaction> transactions = new List<ExpenseTransaction>();
+
+    // Tracks the total expenses incurred
+    private int totalExpense = 0;
+
+    // Variables to store selected filter values
+    private string tagFilter = "";
+    private string categoryFilter = "";
+
+    // Adds a new expense transaction to the list and saves it to the file
+    private void AddExpense()
+    {
+        transactions.Add(transaction);
+        totalExpense += transaction.Amount;
+        transaction = new ExpenseTransaction(); // Clear the form after adding
+        SaveTransactionsToFile();
+    }
+
+    // Removes an expense transaction from the list and updates the total
+    private void DeleteExpense(ExpenseTransaction expenseToDelete)
+    {
+        transactions.Remove(expenseToDelete);
+        totalExpense -= expenseToDelete.Amount;
+        SaveTransactionsToFile();
+    }
+
+    // Saves the list of transactions to a JSON file for persistent storage
+    private void SaveTransactionsToFile()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
+        var json = JsonSerializer.Serialize(transactions);
+        File.WriteAllText(path, json);
+    }
+
+    // Loads previously saved transactions from the file on component initialization
+    protected override void OnInitialized()
+    {
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
+        if (File.Exists(path))
+        {
+            var json = File.ReadAllText(path);
+            transactions = JsonSerializer.Deserialize<List<ExpenseTransaction>>(json) ?? new List<ExpenseTransaction>();
+
+            // Calculate total expenses from loaded transactions
+            foreach (var expense in transactions)
+            {
+                totalExpense += expense.Amount;
+            }
+        }
+    }
+
+    // Data model for an expense transaction
     public class ExpenseTransaction
     {
         public int Amount { get; set; }
         public DateTime DoT { get; set; }
         public string Category { get; set; }
+        public string Tags { get; set; }
         public string Note { get; set; }
     }
-
-    // This variable holds the currently entered expense data
-    private ExpenseTransaction transaction = new ExpenseTransaction();
-
-    // This list stores all the expense transactions loaded from the file
-    private List<ExpenseTransaction> transactions = new List<ExpenseTransaction>();
-
-    // These properties store the highest and lowest expense amounts
-    public int HighestExpenseAmount { get; set; }
-    public int LowestExpenseAmount { get; set; }
-
-    // This method is called when the "Add Expense" button is clicked
-    private void AddExpense()
-    {
-        // Add the current transaction to the list
-        transactions.Add(transaction);
-
-        // Clear the form fields for the next entry
-        transaction = new ExpenseTransaction();
-
-        // Save the updated list of transactions to the file
-        SaveTransactionsToFile();
-    }
-
-    // This method saves the list of transactions to a JSON file
-    private void SaveTransactionsToFile()
-    {
-        // Get the path to the "My Documents" folder
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
-
-        // Serialize the list of transactions to JSON
-        var json = JsonSerializer.Serialize(transactions);
-
-        // Write the JSON data to the file
-        File.WriteAllText(path, json);
-    }
-
-    // This method is called when the component is first initialized
-    protected override void OnInitialized()
-    {
-        // Get the path to the "expenses.json" file
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
-
-        // Check if the file exists
-        if (File.Exists(path))
-        {
-            // Read the JSON data from the file
-            var json = File.ReadAllText(path);
-
-            // Deserialize the JSON data into a list of ExpenseTransaction objects
-            transactions = JsonSerializer.Deserialize<List<ExpenseTransaction>>(json) ?? new List<ExpenseTransaction>();
-        }
-
-        // Calculate the highest and lowest expense amounts if there are any transactions
-        if (transactions.Any())
-        {
-            HighestExpenseAmount = transactions.Max(t => t.Amount);
-            LowestExpenseAmount = transactions.Min(t => t.Amount);
-        }
-    }
 }
+
+<style>
+    /* General Styles */
+    body {
+        font-family: sans-serif;
+        background-color: #08212D; /* Dark background */
+        color: #fff; /* White text color */
+    }
+
+    /* Container */
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #121C21; /* Slightly lighter background for container */
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #94B2C7;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        color: #94B2C7;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #333;
+        border-radius: 3px;
+        background-color: #263845;
+        color: #fff;
+    }
+
+    button-back {
+        position: fixed;
+        top: 10px; /* Adjust top margin as needed */
+        right: 10px; /* Adjust right margin as needed */
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    button-delete {
+        background-color: #1F94E0;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    td {
+        color: #94B2C7;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+
+    th {
+        color: #fff;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+        background-color: #303030; /* Header background */
+    }
+
+    /* Footer Styles */
+    footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #888;
+    }
+
+</style>

@@ -1,81 +1,46 @@
-﻿@* @page "/dashboard" *@
+﻿@page "/dashboard"
 
 @using System.Text.Json
 
-@* <h3>Dashboard</h3> *@
 <NavLink href="/welcome"><button>←</button></NavLink>
-
-@* @if (transactions != null && transactions.Count > 0) *@
-@* { *@
-@*     <h3>Income History</h3> *@
-@*     <table class="table"> *@
-@*         <thead> *@
-@*             <tr> *@
-@*                 <th>Income Amount</th> *@
-@*                 <th>Date</th> *@
-@*                 <th>Category</th> *@
-@*                 <th>Tags</th> *@
-@*                 <th>Note</th> *@
-@*             </tr> *@
-@*         </thead> *@
-@*         <tbody> *@
-@*             @foreach (var income in transactions.Where(t => t.IncomeAmount > 0)) *@
-@*             { *@
-@*                 <tr> *@
-@*                     <td>@income.IncomeAmount</td> *@
-@*                     <td>@income.DoT.ToShortDateString()</td> *@
-@*                     <td>@income.Category</td> *@
-@*                     <td>@income.Tags</td> *@
-@*                     <td>@income.Note</td> *@
-@*                 </tr> *@
-@*             } *@
-@*         </tbody> *@
-@*     </table> *@
-
-@*     <h3>Highest Income: @HighestInflow</h3> *@
-@*     <h3>Lowest Income: @LowestInflow</h3> *@
-@* } *@
-
-@* <p>Account Balance: @accountBalance</p> *@
-
-@* @code { *@
-@*     private List<IncomeTransaction> transactions = new List<IncomeTransaction>(); *@
-@*     private decimal accountBalance = 0; *@
-@*     public decimal HighestInflow { get; set; } *@
-@*     public decimal LowestInflow { get; set; } *@
-
-@*     protected override void OnInitialized() *@
-@*     { *@
-@*         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json"); *@
-@*         if (File.Exists(path)) *@
-@*         { *@
-@*             var json = File.ReadAllText(path); *@
-@*             transactions = JsonSerializer.Deserialize<List<IncomeTransaction>>(json) ?? new List<IncomeTransaction>(); *@
-@*         } *@
-
-@*         // Calculate highest and lowest income *@
-@*         HighestInflow = transactions.Where(t => t.IncomeAmount > 0).Max(t => t.IncomeAmount); *@
-@*         LowestInflow = transactions.Where(t => t.IncomeAmount > 0).Min(t => t.IncomeAmount); *@
-
-@*         // Adds initial balance from income transactions *@
-@*         accountBalance = transactions.Where(t => t.IncomeAmount > 0).Sum(t => t.IncomeAmount); *@
-@*     } *@
-
-@*     public class IncomeTransaction *@
-@*     { *@
-@*         public int IncomeAmount { get; set; } *@
-@*         public DateTime DoT { get; set; } *@
-@*         public string Category { get; set; } *@
-@*         public string Tags { get; set; } *@
-@*         public string Note { get; set; } *@
-@*     } *@
-@* } *@
-@page "/dashboard"
 
 <h1>Dashboard 📈</h1>
 
 <h3>Total Balance: Nrs.@TotalBalance.ToString("N2")</h3>
 <h3>Total Transactions: @TotalTransactions</h3>
+
+@if (incomeTransactions.Any())
+{
+        <h3>Highest Income: Nrs.@GetHighestIncome().ToString("N2")</h3>
+        <h3>Lowest Income: Nrs.@GetLowestIncome().ToString("N2")</h3>
+}
+
+@if (expenseTransactions.Any())
+{
+        <h3>Highest Expense: Nrs.@GetHighestExpense().ToString("N2")</h3>
+        <h3>Lowest Expense: Nrs.@GetLowestExpense().ToString("N2")</h3>
+}
+
+@if (debts.Any())
+{
+        <h3>Highest Debt: Nrs.@GetHighestDebt().ToString("N2")</h3>
+        <h3>Lowest Debt: Nrs.@GetLowestDebt().ToString("N2")</h3>
+}
+
+<h3>Upcoming Debts:</h3>
+<ul>
+    @foreach (var debt in debts)
+    {
+        if (debt.DueDate >= DateTime.Now)
+        {
+            <li>
+                Amount: Nrs.@debt.DebtAmount.ToString("N2")
+                | Due Date: @debt.DueDate.ToShortDateString()
+                | Creditor: @debt.Creditor
+            </li>
+        }
+    }
+</ul>
 
 @code {
     private List<IncomeTransaction> incomeTransactions = new List<IncomeTransaction>();
@@ -86,11 +51,25 @@
     {
         get
         {
-            decimal totalIncome = incomeTransactions.Sum(t => t.IncomeAmount);
-            decimal totalExpenses = expenseTransactions.Sum(t => t.Amount);
-            decimal totalDebts = debts.Sum(d => d.DebtAmount);
+            decimal totalIncome = 0;
+            foreach (var transaction in incomeTransactions)
+            {
+                totalIncome += transaction.IncomeAmount;
+            }
 
-            return totalIncome - totalExpenses - totalDebts;
+            decimal totalExpenses = 0;
+            foreach (var transaction in expenseTransactions)
+            {
+                totalExpenses += transaction.Amount;
+            }
+
+            decimal totalDebts = 0;
+            foreach (var debt in debts)
+            {
+                totalDebts += debt.DebtAmount;
+            }
+
+            return totalIncome - totalExpenses + totalDebts;
         }
     }
 
@@ -100,6 +79,114 @@
         {
             return incomeTransactions.Count + expenseTransactions.Count;
         }
+    }
+
+    private int GetHighestIncome()
+    {
+        if (incomeTransactions.Count == 0)
+        {
+            return 0;
+        }
+
+        int highestIncome = incomeTransactions[0].IncomeAmount;
+        foreach (var transaction in incomeTransactions)
+        {
+            if (transaction.IncomeAmount > highestIncome)
+            {
+                highestIncome = transaction.IncomeAmount;
+            }
+        }
+        return highestIncome;
+    }
+
+    private int GetLowestIncome()
+    {
+        if (incomeTransactions.Count == 0)
+        {
+            return 0;
+        }
+
+        int lowestIncome = incomeTransactions[0].IncomeAmount;
+        foreach (var transaction in incomeTransactions)
+        {
+            if (transaction.IncomeAmount < lowestIncome)
+            {
+                lowestIncome = transaction.IncomeAmount;
+            }
+        }
+        return lowestIncome;
+    }
+
+    private int GetHighestExpense()
+    {
+        if (expenseTransactions.Count == 0)
+        {
+            return 0;
+        }
+
+        int highestExpense = expenseTransactions[0].Amount;
+        foreach (var transaction in expenseTransactions)
+        {
+            if (transaction.Amount > highestExpense)
+            {
+                highestExpense = transaction.Amount;
+            }
+        }
+        return highestExpense;
+    }
+
+    private int GetLowestExpense()
+    {
+        if (expenseTransactions.Count == 0)
+        {
+            return 0;
+        }
+
+        int lowestExpense = expenseTransactions[0].Amount;
+        foreach (var transaction in expenseTransactions)
+        {
+            if (transaction.Amount < lowestExpense)
+            {
+                lowestExpense = transaction.Amount;
+            }
+        }
+        return lowestExpense;
+    }
+
+    private int GetHighestDebt()
+    {
+        if (debts.Count == 0)
+        {
+            return 0;
+        }
+
+        int highestDebt = debts[0].DebtAmount;
+        foreach (var debt in debts)
+        {
+            if (debt.DebtAmount > highestDebt)
+            {
+                highestDebt = debt.DebtAmount;
+            }
+        }
+        return highestDebt;
+    }
+
+    private int GetLowestDebt()
+    {
+        if (debts.Count == 0)
+        {
+            return 0;
+        }
+
+        int lowestDebt = debts[0].DebtAmount;
+        foreach (var debt in debts)
+        {
+            if (debt.DebtAmount < lowestDebt)
+            {
+                lowestDebt = debt.DebtAmount;
+            }
+        }
+        return lowestDebt;
     }
 
     protected override void OnInitialized()

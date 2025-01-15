@@ -1,16 +1,20 @@
 ﻿body {
     background-color: #08212D; /* Dark background color */
     font-family: sans-serif;
+    display: flex; 
+    justify-content: center;
+    align-items: center;
+    min-height: 90vh;
 }
-
 h3 {
     color: #fff; /* White text color */
-    margin-top: 50px; /* Add some top margin */
+    margin-top: 20px;
+    text-align: center; /* Center the heading horizontally */
 }
 
 form {
     background-color: #121C21; /* Darker background for the form */
-    padding: 20px;
+    padding: 50px;
     border-radius: 5px;
 }
 
@@ -42,4 +46,5 @@ button[type="submit"] {
 
     button[type="submit"]:hover {
         background-color: #20741A; /* Slightly darker blue on hover */
+        
     }
