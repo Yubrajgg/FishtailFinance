@@ -2,7 +2,7 @@
 @using System.Text.Json
 
 <h3>Add Expense</h3>
-<NavLink href="/transaction"><button>Back</button></NavLink> <!-- navigate to the transaction page -->
+<NavLink href="/transaction"><button>←</button></NavLink> <!-- navigate to the transaction page -->
 
 <EditForm Model="transaction" OnValidSubmit="AddExpense">
     <div class="form-group">
@@ -61,16 +61,16 @@ else
 
 @code {
     //object to hold the current expense data which is entered
-    private Transaction transaction = new Transaction();
+    private ExpenseTransaction transaction = new ExpenseTransaction();
 
     //list to store all expense transactions loaded saved to the file
-    private List<Transaction> transactions = new List<Transaction>();
+    private List<ExpenseTransaction> transactions = new List<ExpenseTransaction>();
 
     //method to add a new expense transaction to the list and save to file
     private void AddExpense()
     {
         transactions.Add(transaction);
-        transaction = new Transaction(); //clear the form after adding an expense
+        transaction = new ExpenseTransaction(); //clear the form after adding an expense
         SaveTransactionsToFile();
     }
 
@@ -89,12 +89,12 @@ else
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
+            transactions = JsonSerializer.Deserialize<List<ExpenseTransaction>>(json) ?? new List<ExpenseTransaction>();
         }
     }
 
     //class to represent an expense transaction
-    public class Transaction
+    public class ExpenseTransaction
     {
         public int Amount { get; set; }
         public DateTime DoT { get; set; }

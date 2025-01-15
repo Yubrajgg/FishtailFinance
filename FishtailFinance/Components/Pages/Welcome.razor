@@ -1,5 +1,48 @@
-﻿
-@page "/welcome"
-<center><h3>Welcome To Fishtail Finance</h3></center>
+﻿@page "/welcome"
+<style>
+    /* General styles */
+    body {
+        font-family: sans-serif;
+        background-color: #15202B; /* Dark background */
+        color: #FFFFFF; /* White text */
+        display: flex; /* Center content vertically */
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Make sure content is centered in the viewport */
+    }
 
-<NavLink href="/transaction"><button>Transaction</button></NavLink>
+    /* Centered content */
+    .centered-content {
+        text-align: center;
+    }
+
+    /* Navigation buttons */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+    }
+
+        .navigation-buttons button {
+            background-color: #1C2833; /* Slightly lighter background for buttons */
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            color: #FFFFFF;
+            cursor: pointer;
+        }
+
+            /* Active button style (optional) */
+            .navigation-buttons button.active {
+                background-color: #1DA1F2; /* Twitter blue */
+            }
+</style>
+
+<div class="centered-content">
+    <h3>Welcome To Fishtail Finance</h3>
+    <div class="navigation-buttons">
+        <NavLink href="/welcome"><button class="active">Home</button></NavLink>
+        <NavLink href="/transaction"><button>Transaction</button></NavLink>
+        <NavLink href="/dashboard"><button>Dashboard</button></NavLink>
+    </div>
+</div>

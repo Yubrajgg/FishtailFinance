@@ -1,72 +1,158 @@
-﻿@page "/dashboard"
+﻿@* @page "/dashboard" *@
 
 @using System.Text.Json
 
-<h3>Dashboard</h3>
-<NavLink href="/transaction"><button>Back</button></NavLink>
+@* <h3>Dashboard</h3> *@
+<NavLink href="/welcome"><button>←</button></NavLink>
 
-@if (transactions != null && transactions.Count > 0)
-{
-    <h3>Income History</h3>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Amount</th>
-                <th>Date</th>
-                <th>Category</th>
-                <th>Tags</th>
-                <th>Note</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var income in transactions.Where(t => t.Amount > 0))
-            {
-                <tr>
-                    <td>@income.Amount</td>
-                    <td>@income.DoT.ToShortDateString()</td>
-                    <td>@income.Category</td>
-                    <td>@income.Tags</td>
-                    <td>@income.Note</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+@* @if (transactions != null && transactions.Count > 0) *@
+@* { *@
+@*     <h3>Income History</h3> *@
+@*     <table class="table"> *@
+@*         <thead> *@
+@*             <tr> *@
+@*                 <th>Income Amount</th> *@
+@*                 <th>Date</th> *@
+@*                 <th>Category</th> *@
+@*                 <th>Tags</th> *@
+@*                 <th>Note</th> *@
+@*             </tr> *@
+@*         </thead> *@
+@*         <tbody> *@
+@*             @foreach (var income in transactions.Where(t => t.IncomeAmount > 0)) *@
+@*             { *@
+@*                 <tr> *@
+@*                     <td>@income.IncomeAmount</td> *@
+@*                     <td>@income.DoT.ToShortDateString()</td> *@
+@*                     <td>@income.Category</td> *@
+@*                     <td>@income.Tags</td> *@
+@*                     <td>@income.Note</td> *@
+@*                 </tr> *@
+@*             } *@
+@*         </tbody> *@
+@*     </table> *@
 
-    <h3>Highest Income: @HighestInflow</h3>
-    <h3>Lowest Income: @LowestInflow</h3>
-}
+@*     <h3>Highest Income: @HighestInflow</h3> *@
+@*     <h3>Lowest Income: @LowestInflow</h3> *@
+@* } *@
 
-<p>Account Balance: @accountBalance</p>
+@* <p>Account Balance: @accountBalance</p> *@
+
+@* @code { *@
+@*     private List<IncomeTransaction> transactions = new List<IncomeTransaction>(); *@
+@*     private decimal accountBalance = 0; *@
+@*     public decimal HighestInflow { get; set; } *@
+@*     public decimal LowestInflow { get; set; } *@
+
+@*     protected override void OnInitialized() *@
+@*     { *@
+@*         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json"); *@
+@*         if (File.Exists(path)) *@
+@*         { *@
+@*             var json = File.ReadAllText(path); *@
+@*             transactions = JsonSerializer.Deserialize<List<IncomeTransaction>>(json) ?? new List<IncomeTransaction>(); *@
+@*         } *@
+
+@*         // Calculate highest and lowest income *@
+@*         HighestInflow = transactions.Where(t => t.IncomeAmount > 0).Max(t => t.IncomeAmount); *@
+@*         LowestInflow = transactions.Where(t => t.IncomeAmount > 0).Min(t => t.IncomeAmount); *@
+
+@*         // Adds initial balance from income transactions *@
+@*         accountBalance = transactions.Where(t => t.IncomeAmount > 0).Sum(t => t.IncomeAmount); *@
+@*     } *@
+
+@*     public class IncomeTransaction *@
+@*     { *@
+@*         public int IncomeAmount { get; set; } *@
+@*         public DateTime DoT { get; set; } *@
+@*         public string Category { get; set; } *@
+@*         public string Tags { get; set; } *@
+@*         public string Note { get; set; } *@
+@*     } *@
+@* } *@
+@page "/dashboard"
+
+<h1>Dashboard</h1>
+
+<h3>Total Balance: Nrs.@TotalBalance.ToString("N2")</h3>
+<h3>Total Transactions: @TotalTransactions</h3>
 
 @code {
-    private List<Transaction> transactions = new List<Transaction>();
-    private decimal accountBalance = 0;
-    public decimal HighestInflow { get; set; }
-    public decimal LowestInflow { get; set; }
+    private List<IncomeTransaction> incomeTransactions = new List<IncomeTransaction>();
+    private List<ExpenseTransaction> expenseTransactions = new List<ExpenseTransaction>();
+    private List<Debt> debts = new List<Debt>();
+
+    private decimal TotalBalance
+    {
+        get
+        {
+            decimal totalIncome = incomeTransactions.Sum(t => t.IncomeAmount);
+            decimal totalExpenses = expenseTransactions.Sum(t => t.Amount);
+            decimal totalDebts = debts.Sum(d => d.DebtAmount);
+
+            return totalIncome - totalExpenses - totalDebts;
+        }
+    }
+
+    private int TotalTransactions
+    {
+        get
+        {
+            return incomeTransactions.Count + expenseTransactions.Count;
+        }
+    }
 
     protected override void OnInitialized()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
-        if (File.Exists(path))
+        // Load income transactions
+        string incomePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
+        if (File.Exists(incomePath))
         {
-            var json = File.ReadAllText(path);
-            transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
+            string incomeJson = File.ReadAllText(incomePath);
+            incomeTransactions = JsonSerializer.Deserialize<List<IncomeTransaction>>(incomeJson) ?? new List<IncomeTransaction>();
         }
 
-        // Calculate highest and lowest income
-        HighestInflow = transactions.Where(t => t.Amount > 0).Max(t => t.Amount);
-        LowestInflow = transactions.Where(t => t.Amount > 0).Min(t => t.Amount);
+        // Load expense transactions
+        string expensePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "expenses.json");
+        if (File.Exists(expensePath))
+        {
+            string expenseJson = File.ReadAllText(expensePath);
+            expenseTransactions = JsonSerializer.Deserialize<List<ExpenseTransaction>>(expenseJson) ?? new List<ExpenseTransaction>();
+        }
 
-        // Adds initial balance from income transactions
-        accountBalance = transactions.Where(t => t.Amount > 0).Sum(t => t.Amount);
+        // Load debts
+        string debtsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
+        if (File.Exists(debtsPath))
+        {
+            string debtsJson = File.ReadAllText(debtsPath);
+            debts = JsonSerializer.Deserialize<List<Debt>>(debtsJson) ?? new List<Debt>();
+        }
     }
 
-    public class Transaction
+    public class IncomeTransaction
+    {
+        public int IncomeAmount { get; set; }
+        public DateTime DoT { get; set; }
+        public string Category { get; set; }
+        public string Tags { get; set; }
+        public string Note { get; set; }
+    }
+
+    public class ExpenseTransaction
     {
         public int Amount { get; set; }
         public DateTime DoT { get; set; }
         public string Category { get; set; }
-        public string Tags { get; set; }
+        public string Note { get; set; }
+    }
+
+    public class Debt
+    {
+        public int DebtAmount { get; set; }
+        public DateTime DoD { get; set; }
+        public string Creditor { get; set; }
+        public decimal InterestRate { get; set; }
+        public DateTime DueDate { get; set; }
         public string Note { get; set; }
     }
 }

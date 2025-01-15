@@ -1,14 +1,15 @@
 ﻿@page "/income"
 @using System.Text.Json
 
-<h3>Add Income</h3>
+<h1>Add Income</h1>
 
-<NavLink href="/transaction"><button>Back</button></NavLink> @* to navigate to transaction page *@
+<NavLink href="/transaction"><button>←</button></NavLink> @* to navigate to transaction page *@
+
 
 <EditForm Model="transaction" OnValidSubmit="AddIncome">
     <div class="form-group">
-        <label for="amount">Amount:</label>
-        <InputNumber @bind-Value="transaction.Amount" id="amount" />
+        <label for="amount">Income Amount:</label>
+        <InputNumber @bind-Value="transaction.IncomeAmount" id="amount" />
     </div>
     <div class="form-group">
         <label for="date">Date of Transaction:</label>
@@ -33,18 +34,19 @@
     <button type="submit" class="btn btn-primary">Add Income</button>
 </EditForm>
 
+
 @code {
     //object to hold the current income data being entered
-    private Transaction transaction = new Transaction();
+    private IncomeTransaction transaction = new IncomeTransaction();
 
     //list to store all income transactions loaded from or saved to the file
-    private List<Transaction> transactions = new List<Transaction>();
+    private List<IncomeTransaction> transactions = new List<IncomeTransaction>();
 
     //method to add a new income transaction to the list and save to file
     private void AddIncome()
     {
         transactions.Add(transaction);
-        transaction = new Transaction(); //clear the form after adding income
+        transaction = new IncomeTransaction(); //clear the form after adding income
         SaveTransactionsToFile();
     }
 
@@ -63,13 +65,13 @@
         if (File.Exists(path))
         {
             var json = File.ReadAllText(path);
-            transactions = JsonSerializer.Deserialize<List<Transaction>>(json) ?? new List<Transaction>();
+            transactions = JsonSerializer.Deserialize<List<IncomeTransaction>>(json) ?? new List<IncomeTransaction>();
         }
     }
 
-    public class Transaction
+    public class IncomeTransaction
     {
-        public int Amount { get; set; }
+        public int IncomeAmount { get; set; }
         public DateTime DoT { get; set; }
         public string Category { get; set; }
         public string Tags { get; set; }
