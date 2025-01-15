@@ -1,15 +1,15 @@
 ﻿@page "/income"
+@using System.Linq
 @using System.Text.Json
 
 <h1>Add Income</h1>
 
-<NavLink href="/transaction"><button>←</button></NavLink> @* to navigate to transaction page *@
-
+<NavLink href="/transaction"><button-back>Back</button-back></NavLink>
 
 <EditForm Model="transaction" OnValidSubmit="AddIncome">
     <div class="form-group">
         <label for="amount">Income Amount:</label>
-        <InputNumber @bind-Value="transaction.IncomeAmount" id="amount" />
+        <InputNumber @bind-Value="transaction.IncomeAmount" placeholder="enter an amount" id="amount" />
     </div>
     <div class="form-group">
         <label for="date">Date of Transaction:</label>
@@ -25,32 +25,96 @@
     </div>
     <div class="form-group">
         <label for="tags">Tags:</label>
-        <InputText @bind-Value="transaction.Tags" id="tags" />
+        <InputSelect @bind-Value="transaction.Tags" id="tags">
+            <option value="">Select Tags (Optional)</option>
+            <option value="Monthly Salary">Monthly Salary</option>
+            <option value="Investment">Investment</option>
+            <option value="Gift">Gift</option>
+            <option value="Business">Business</option>
+            <option value="Others">Others</option>
+        </InputSelect>
     </div>
     <div class="form-group">
         <label for="note">Note:</label>
-        <InputText @bind-Value="transaction.Note" id="note" />
+        <InputText @bind-Value="transaction.Note" placeholder="(Optional)" id="note" />
     </div>
     <button type="submit" class="btn btn-primary">Add Income</button>
 </EditForm>
 
+<h2>Income History</h2>
+
+<div class="filter-container">
+    <label for="tagFilter">Tag:</label>
+    <select @bind="tagFilter" id="tagFilter">
+        <option value="">All Tags</option>
+        @foreach (var tag in transactions.Select(t => t.Tags).Distinct())
+        {
+            <option value="@tag">@tag</option>
+        }
+    </select>
+
+    <label for="categoryFilter">Category:</label>
+    <select @bind="categoryFilter" id="categoryFilter">
+        <option value="">All Categories</option>
+        <option value="Salary">Salary</option>
+        <option value="Business">Business</option>
+        <option value="Others">Others</option>
+    </select>
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Amount</th>
+            <th>Date</th>
+            <th>Category</th>
+            <th>Tags</th>
+            <th>Note</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var income in transactions.Where(t =>
+        (string.IsNullOrEmpty(tagFilter) || t.Tags == tagFilter) &&
+        (string.IsNullOrEmpty(categoryFilter) || t.Category == categoryFilter)))
+        {
+            <tr>
+                <td>@income.IncomeAmount</td>
+                <td>@income.DoT.ToString("yyyy-MM-dd")</td>
+                <td>@income.Category</td>
+                <td>@income.Tags</td>
+                <td>@income.Note</td>
+                <td><button-delete @onclick="@(() => DeleteIncome(income))">✖</button-delete></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<p>Total Income: @totalIncome</p>
 
 @code {
-    //object to hold the current income data being entered
     private IncomeTransaction transaction = new IncomeTransaction();
-
-    //list to store all income transactions loaded from or saved to the file
     private List<IncomeTransaction> transactions = new List<IncomeTransaction>();
+    private int totalIncome = 0;
 
-    //method to add a new income transaction to the list and save to file
+    private string tagFilter = "";
+    private string categoryFilter = "";
+
     private void AddIncome()
     {
         transactions.Add(transaction);
-        transaction = new IncomeTransaction(); //clear the form after adding income
+        totalIncome += transaction.IncomeAmount;
+        transaction = new IncomeTransaction();
         SaveTransactionsToFile();
     }
 
-    //method to save the list of income transactions to a JSON file
+    private void DeleteIncome(IncomeTransaction incomeToDelete)
+    {
+        transactions.Remove(incomeToDelete);
+        totalIncome -= incomeToDelete.IncomeAmount;
+        SaveTransactionsToFile();
+    }
+
     private void SaveTransactionsToFile()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
@@ -58,7 +122,6 @@
         File.WriteAllText(path, json);
     }
 
-    //load income transactions from the JSON file on component initialization
     protected override void OnInitialized()
     {
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "transactions.json");
@@ -66,6 +129,11 @@
         {
             var json = File.ReadAllText(path);
             transactions = JsonSerializer.Deserialize<List<IncomeTransaction>>(json) ?? new List<IncomeTransaction>();
+
+            foreach (var income in transactions)
+            {
+                totalIncome += income.IncomeAmount;
+            }
         }
     }
 
@@ -78,3 +146,97 @@
         public string Note { get; set; }
     }
 }
+
+
+<style>
+    /* General Styles */
+    body {
+        font-family: sans-serif;
+        background-color:#08212D; /* Dark background */
+        color: #fff; /* White text color */
+    }
+
+    /* Container */
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #121C21; /* Slightly lighter background for container */
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+		color: #94B2C7;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        color: #94B2C7;
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #333;
+        border-radius: 3px;
+        background-color: #263845;
+        color: #fff;
+    }
+
+    button-back {
+        position: fixed;
+        top: 10px; /* Adjust top margin as needed */
+        right: 10px; /* Adjust right margin as needed */
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    button-delete {
+        background-color: #1F94E0; 
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+    td {
+        color: #94B2C7;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+
+    th {
+        color: #fff;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+        background-color: #303030; /* Header background */
+    }
+
+    /* Footer Styles */
+    footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #888;
+    }
+
+   
+</style>
