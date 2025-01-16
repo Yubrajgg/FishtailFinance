@@ -10,7 +10,7 @@
 <EditForm Model="newDebt" OnValidSubmit="AddDebt">
     <div class="form-group">
         <label for="amount">Debt Amount:</label>
-        <InputNumber @bind-Value="newDebt.DebtAmount" id="amount" />
+        <InputNumber @bind-Value="newDebt.DebtAmount" id="amount" required placeholder="Enter amount" />
     </div>
     <div class="form-group">
         <label for="date">Date of Debt:</label>
@@ -34,6 +34,16 @@
     </div>
     <button type="submit" class="btn btn-primary">Add Debt</button>
 </EditForm>
+
+@if (ShowSuccessMessage)
+{
+    <AlertWithCallBack WhileClickingOKButton="OkayButtonPressedForSuccess">
+        <Message>
+            <p><strong>Success!</strong></p>
+            <p>Debt added successfully!</p>
+        </Message>
+    </AlertWithCallBack>
+} 
 
 @if (debts != null && debts.Any())
 {
@@ -76,6 +86,8 @@
 
     private List<Debts> clearedDebts = new List<Debts>(); // List to store cleared debts
 
+    private bool ShowSuccessMessage = false;
+
     private void AddDebt()
     {
         // Add the newly created debt to the list of existing debts
@@ -86,6 +98,9 @@
 
         // Save the updated list of debts to the file
         SaveDebtsToFile();
+
+        // Show success message
+        ShowSuccessMessage = true;
     }
 
     private void ClearDebt(Debts debtToClear)
@@ -142,6 +157,11 @@
             var json = File.ReadAllText(clearedDebtsPath);
             clearedDebts = JsonSerializer.Deserialize<List<Debts>>(json) ?? new List<Debts>();
         }
+    }
+
+    private void OkayButtonPressedForSuccess()
+    {
+        ShowSuccessMessage = false;
     }
 
     public class Debts

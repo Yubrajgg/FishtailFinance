@@ -9,7 +9,7 @@
 <EditForm Model="transaction" OnValidSubmit="AddIncome">
     <div class="form-group">
         <label for="amount">Income Amount:</label>
-        <InputNumber @bind-Value="transaction.IncomeAmount" placeholder="enter an amount" id="amount" />
+        <InputNumber @bind-Value="transaction.IncomeAmount" required placeholder="enter an amount" id="amount" />
     </div>
     <div class="form-group">
         <label for="date">Date of Transaction:</label>
@@ -40,6 +40,16 @@
     </div>
     <button type="submit" class="btn btn-primary">Add Income</button>
 </EditForm>
+
+@if (ShowSuccessMessage)
+{
+    <AlertWithCallBack WhileClickingOKButton="OkayButtonPressedForSuccess">
+        <Message>
+            <p><strong>Success!</strong></p>
+            <p>Income added successfully!</p>
+        </Message>
+    </AlertWithCallBack>
+}
 
 <h2>Income History</h2>
 
@@ -100,12 +110,17 @@
     private string tagFilter = "";
     private string categoryFilter = "";
 
+    private bool ShowSuccessMessage = false;
+
     private void AddIncome()
     {
         transactions.Add(transaction);
         totalIncome += transaction.IncomeAmount;
         transaction = new IncomeTransaction();
         SaveTransactionsToFile();
+
+        // Show success message
+        ShowSuccessMessage = true;
     }
 
     private void DeleteIncome(IncomeTransaction incomeToDelete)
@@ -137,6 +152,11 @@
         }
     }
 
+    private void OkayButtonPressedForSuccess()
+    {
+        ShowSuccessMessage = false;
+    }
+
     public class IncomeTransaction
     {
         public int IncomeAmount { get; set; }
@@ -147,12 +167,11 @@
     }
 }
 
-
 <style>
     /* General Styles */
     body {
         font-family: sans-serif;
-        background-color:#08212D; /* Dark background */
+        background-color: #08212D; /* Dark background */
         color: #fff; /* White text color */
     }
 
@@ -173,7 +192,7 @@
     label {
         display: block;
         margin-bottom: 5px;
-		color: #94B2C7;
+        color: #94B2C7;
     }
 
     input[type="text"],
@@ -201,7 +220,7 @@
     }
 
     button-delete {
-        background-color: #1F94E0; 
+        background-color: #1F94E0;
         color: #fff;
         padding: 10px 20px;
         border: none;
@@ -237,6 +256,4 @@
         margin-top: 20px;
         color: #888;
     }
-
-   
 </style>
