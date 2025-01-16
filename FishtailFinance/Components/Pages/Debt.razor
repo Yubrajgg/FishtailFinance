@@ -3,41 +3,41 @@
 @using System.Linq
 
 <h1>Debts</h1>
-<NavLink href="/transaction"><button>←</button></NavLink> @* navigate to the transaction page *@
+<NavLink href="/transaction"><button-back>Back</button-back></NavLink>
 
 <h2>Add Debt</h2>
 
-<EditForm Model="debt" OnValidSubmit="AddDebt">
+<EditForm Model="newDebt" OnValidSubmit="AddDebt">
     <div class="form-group">
         <label for="amount">Debt Amount:</label>
-        <InputNumber @bind-Value="debt.DebtAmount" id="amount" />
+        <InputNumber @bind-Value="newDebt.DebtAmount" id="amount" />
     </div>
     <div class="form-group">
         <label for="date">Date of Debt:</label>
-        <InputDate @bind-Value="debt.DoD" id="date" />
+        <InputDate @bind-Value="newDebt.DoD" id="date" />
     </div>
     <div class="form-group">
         <label for="creditor">Creditor:</label>
-        <InputText @bind-Value="debt.Creditor" id="creditor" />
+        <InputText @bind-Value="newDebt.Creditor" id="creditor" />
     </div>
     <div class="form-group">
         <label for="interestRate">Interest Rate (optional):</label>
-        <InputNumber @bind-Value="debt.InterestRate" id="interestRate" />
+        <InputNumber @bind-Value="newDebt.InterestRate" id="interestRate" />
     </div>
     <div class="form-group">
         <label for="dueDate">Due Date:</label>
-        <InputDate @bind-Value="debt.DueDate" id="dueDate" />
+        <InputDate @bind-Value="newDebt.DueDate" id="dueDate" />
     </div>
     <div class="form-group">
         <label for="note">Note:</label>
-        <InputText @bind-Value="debt.Note" id="note" />
+        <InputText @bind-Value="newDebt.Note" id="note" />
     </div>
     <button type="submit" class="btn btn-primary">Add Debt</button>
 </EditForm>
 
-@if (debts != null && debts.Count > 0) @* code to display the debt history *@
+@if (debts != null && debts.Any())
 {
-    <h3>Pending debts</h3>
+    <h3>Pending Debts</h3>
     <table>
         <thead>
             <tr>
@@ -51,14 +51,14 @@
             </tr>
         </thead>
         <tbody>
-            @foreach (var debt in debts)
+            @foreach (var debt in debts.Where(d => d.DueDate >= DateTime.Now))
             {
                 <tr>
                     <td>@debt.DebtAmount</td>
-                    <td>@debt.DoD.ToString("yyyy-mm-dd")</td>
+                    <td>@debt.DoD.ToString("yyyy-MM-dd")</td>
                     <td>@debt.Creditor</td>
                     <td>@debt.InterestRate.ToString("P")</td>
-                    <td>@debt.DueDate.ToString("yyyy-mm-dd")</td>
+                    <td>@debt.DueDate.ToString("yyyy-MM-dd")</td>
                     <td>@debt.Note</td>
                     <td>
                         <button class="btn btn-payoff" style="background-color: #263845; color: white;" @onclick="() => ClearDebt(debt)">Pay Off</button>
@@ -70,43 +70,77 @@
 }
 
 @code {
-    //object to hold the current debt being added
-    private Debts debt = new Debts();
+    private Debts newDebt = new Debts(); // Create a new debt object for the form
 
-    //list to store all debts loaded from or saved to the file
-    private List<Debts> debts = new List<Debts>();
+    private List<Debts> debts = new List<Debts>(); // List to store all existing debts
 
-    //method to add a new debt to the list and save to the file
+    private List<Debts> clearedDebts = new List<Debts>(); // List to store cleared debts
+
     private void AddDebt()
     {
-        debts.Add(debt);
-        debt = new Debts(); // Clear the form fields after adding
+        // Add the newly created debt to the list of existing debts
+        debts.Add(newDebt);
+
+        // Clear the form fields for the next entry
+        newDebt = new Debts();
+
+        // Save the updated list of debts to the file
         SaveDebtsToFile();
     }
 
-    //method to remove a debt from the list and save the changes to the file
     private void ClearDebt(Debts debtToClear)
     {
+        // Remove the paid debt from the list of pending debts
         debts.Remove(debtToClear);
+
+        // Add the paid debt to the list of cleared debts
+        clearedDebts.Add(debtToClear);
+
+        // Save both lists to their respective files
         SaveDebtsToFile();
+        SaveClearedDebtsToFile();
     }
 
-    //method to save the list of debts to the JSON file
     private void SaveDebtsToFile()
     {
+        // Get the path to the debts JSON file
         var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
+
+        // Serialize the list of debts to JSON
         var json = JsonSerializer.Serialize(debts);
+
+        // Write the JSON data to the file
         File.WriteAllText(path, json);
     }
 
-    //load debts from the JSON file on component initialization
+    private void SaveClearedDebtsToFile()
+    {
+        // Get the path to the cleared debts JSON file
+        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cleared_debts.json");
+
+        // Serialize the list of cleared debts to JSON
+        var json = JsonSerializer.Serialize(clearedDebts);
+
+        // Write the JSON data to the file
+        File.WriteAllText(path, json);
+    }
+
     protected override void OnInitialized()
     {
-        var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
-        if (File.Exists(path))
+        // Load debts from the JSON file if it exists
+        var debtsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "debts.json");
+        if (File.Exists(debtsPath))
         {
-            var json = File.ReadAllText(path);
+            var json = File.ReadAllText(debtsPath);
             debts = JsonSerializer.Deserialize<List<Debts>>(json) ?? new List<Debts>();
+        }
+
+        // Load cleared debts from the JSON file if it exists
+        var clearedDebtsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cleared_debts.json");
+        if (File.Exists(clearedDebtsPath))
+        {
+            var json = File.ReadAllText(clearedDebtsPath);
+            clearedDebts = JsonSerializer.Deserialize<List<Debts>>(json) ?? new List<Debts>();
         }
     }
 
@@ -120,3 +154,112 @@
         public string Note { get; set; }
     }
 }
+
+
+<style>
+    /* General Styles */
+    body {
+        font-family: sans-serif;
+        background-color: #08212D; /* Dark background */
+        color: #fff; /* White text color */
+    }
+
+    /* Container */
+    .container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        border-radius: 5px;
+        background-color: #121C21; /* Slightly lighter background for container */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Add a subtle shadow */
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 5px;
+        color: #94B2C7;
+        font-weight: bold; /* Make labels slightly bolder */
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+        color: #fff;
+        background-color: #263845;
+        border: 1px solid #333;
+        border-radius: 3px;
+        padding: 10px;
+        width: 100%;
+        box-sizing: border-box; /* Include padding and border in width calculation */
+        transition: all 0.2s ease-in-out; /* Add smooth transitions */
+    }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus {
+            border-color: #1F94E0; /* Highlight on focus */
+            box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
+        }
+
+    button-back {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    button-delete {
+        background-color: #1F94E0;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+        button-delete:hover {
+            background-color: #007bff;
+        }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+        border: 1px solid #333; /* Add border around the table */
+    }
+
+    td {
+        color: #94B2C7;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+    }
+
+    th {
+        color: #fff;
+        padding: 10px;
+        text-align: left;
+        border-bottom: 1px solid #333;
+        background-color: #303030; /* Header background */
+    }
+
+    /* Footer Styles */
+    footer {
+        text-align: center;
+        margin-top: 20px;
+        color: #888;
+    }
+</style>

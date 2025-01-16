@@ -2,36 +2,30 @@
 
 @using System.Text.Json
 
-<NavLink href="/welcome"><button>←</button></NavLink>
+<NavLink href="/welcome"><button-back>Back</button-back></NavLink>
 
 <h1>Dashboard 📈</h1>
 
-<h3>Total Balance: Nrs.@TotalBalance.ToString("N2")</h3>
+<h3>Total Balance: Nrs. @TotalBalance.ToString("N2")</h3>
 <h3>Total Transactions: @TotalTransactions</h3>
 
 @if (incomeTransactions.Any())
 {
-        <h3>Highest Income: Nrs.@GetHighestIncome().ToString("N2")</h3>
-        <h3>Lowest Income: Nrs.@GetLowestIncome().ToString("N2")</h3>
+    <h3>Highest Income: Nrs. @GetHighestIncome().ToString("N2")</h3>
+    <h3>Lowest Income: Nrs. @GetLowestIncome().ToString("N2")</h3>
 }
 
 @if (expenseTransactions.Any())
 {
-        <h3>Highest Expense: Nrs.@GetHighestExpense().ToString("N2")</h3>
-        <h3>Lowest Expense: Nrs.@GetLowestExpense().ToString("N2")</h3>
+    <h3>Highest Expense: Nrs. @GetHighestExpense().ToString("N2")</h3>
+    <h3>Lowest Expense: Nrs. @GetLowestExpense().ToString("N2")</h3>
 }
 
-@if (debts.Any())
+@if (clearedDebts.Any())
 {
-        <h3>Highest Debt: Nrs.@GetHighestDebt().ToString("N2")</h3>
-        <h3>Lowest Debt: Nrs.@GetLowestDebt().ToString("N2")</h3>
-}
-
-<h3>Upcoming Debts:</h3>
-<ul>
-    @foreach (var debt in debts)
-    {
-        if (debt.DueDate >= DateTime.Now)
+    <h1>Cleared Debts:</h1>
+    <ul>
+        @foreach (var debt in clearedDebts)
         {
             <li>
                 Amount: Nrs.@debt.DebtAmount.ToString("N2")
@@ -39,13 +33,32 @@
                 | Creditor: @debt.Creditor
             </li>
         }
-    }
-</ul>
+    </ul>
+}
+
+@if (debts.Any())
+{
+    <h1>Upcoming Debts:</h1>
+    <ul>
+        @foreach (var debt in debts)
+        {
+            @if (debt.DueDate >= DateTime.Now)
+            {
+                <li>
+                    Amount: Nrs. @debt.DebtAmount.ToString("N2")
+                    | Due Date: @debt.DueDate.ToShortDateString()
+                    | Creditor: @debt.Creditor
+                </li>
+            }
+        }
+    </ul>
+}
 
 @code {
     private List<IncomeTransaction> incomeTransactions = new List<IncomeTransaction>();
     private List<ExpenseTransaction> expenseTransactions = new List<ExpenseTransaction>();
     private List<Debt> debts = new List<Debt>();
+    private List<Debt> clearedDebts = new List<Debt>();
 
     private decimal TotalBalance
     {
@@ -153,42 +166,6 @@
         return lowestExpense;
     }
 
-    private int GetHighestDebt()
-    {
-        if (debts.Count == 0)
-        {
-            return 0;
-        }
-
-        int highestDebt = debts[0].DebtAmount;
-        foreach (var debt in debts)
-        {
-            if (debt.DebtAmount > highestDebt)
-            {
-                highestDebt = debt.DebtAmount;
-            }
-        }
-        return highestDebt;
-    }
-
-    private int GetLowestDebt()
-    {
-        if (debts.Count == 0)
-        {
-            return 0;
-        }
-
-        int lowestDebt = debts[0].DebtAmount;
-        foreach (var debt in debts)
-        {
-            if (debt.DebtAmount < lowestDebt)
-            {
-                lowestDebt = debt.DebtAmount;
-            }
-        }
-        return lowestDebt;
-    }
-
     protected override void OnInitialized()
     {
         // Load income transactions
@@ -213,6 +190,14 @@
         {
             string debtsJson = File.ReadAllText(debtsPath);
             debts = JsonSerializer.Deserialize<List<Debt>>(debtsJson) ?? new List<Debt>();
+        }
+
+        // Load cleared debts
+        string clearedDebtsPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "cleared_debts.json");
+        if (File.Exists(clearedDebtsPath))
+        {
+            string clearedDebtsJson = File.ReadAllText(clearedDebtsPath);
+            clearedDebts = JsonSerializer.Deserialize<List<Debt>>(clearedDebtsJson) ?? new List<Debt>();
         }
     }
 
@@ -243,3 +228,41 @@
         public string Note { get; set; }
     }
 }
+
+<style>
+    body {
+        font-family: sans-serif;
+        background-color: #08212D;
+        color: #fff;
+    }
+
+    h1 {
+        color: #fff;
+    }
+
+    h3 {
+        color: #94B2C7;
+    }
+
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+
+    li {
+        margin-bottom: 5px;
+        color: #94B2C7;
+    }
+
+    button-back {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px; 
+    }
+
+</style>
