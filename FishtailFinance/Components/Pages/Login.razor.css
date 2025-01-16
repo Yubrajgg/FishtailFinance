@@ -1,29 +1,29 @@
 ﻿body {
     background-color: #08212D; /* Dark background color */
     font-family: sans-serif;
-    display: flex; 
+    display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 90vh;
+    min-height: 90vh; /* Increase height to ensure form is always centered */
 }
+
 h3 {
     color: #fff; /* White text color */
-    margin-top: 20px;
+    margin-bottom: 20px; /* Add margin below the heading */
     text-align: center; /* Center the heading horizontally */
 }
 
 form {
     background-color: #121C21; /* Darker background for the form */
-    padding: 50px;
+    padding: 30px; /* Reduce padding for a more compact look */
     border-radius: 5px;
+    text-align: center; /* Center the form content horizontally */
 }
 
 p {
     color: #fff; /* White text color */
     margin: 10px 0;
 }
-
-
 
 input[type="text"],
 input[type="password"] {
@@ -33,6 +33,7 @@ input[type="password"] {
     border: 1px solid #555;
     border-radius: 3px;
     background-color: #263845; /* Darker background for input fields */
+    margin-bottom: 15px; /* Add spacing between input fields */
 }
 
 button[type="submit"] {
@@ -46,5 +47,4 @@ button[type="submit"] {
 
     button[type="submit"]:hover {
         background-color: #20741A; /* Slightly darker blue on hover */
-        
     }

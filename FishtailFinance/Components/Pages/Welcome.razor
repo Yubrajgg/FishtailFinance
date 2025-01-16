@@ -2,6 +2,7 @@
 
 <div class="centered-content">
     <h3>Welcome To Fishtail Finance</h3>
+    <NavLink href="/"><button-logout>Log Out</button-logout></NavLink>
 </div>
 
 <div class="navigation-buttons">
@@ -21,6 +22,19 @@
         flex-direction: column; /* Make the main content grow vertically */
         justify-content: space-between; /* Space between content and footer */
     }
+
+	button-logout {
+        position: fixed;
+        top: 10px;
+        right: 10px;
+        background: #08212D;
+        color: #fff;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+	}
 
     /* Centered content */
     .centered-content {
