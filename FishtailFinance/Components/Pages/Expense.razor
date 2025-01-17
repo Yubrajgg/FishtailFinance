@@ -2,11 +2,20 @@
 @using System.Linq
 @using System.Text.Json
 
-<h3>Add Expense</h3>
+<div class="navigation-buttons">
+    <NavLink href="/income"><button>Add Income</button></NavLink>
+    <NavLink href="/expense"><button class="active">Add Expense</button></NavLink>
+    <NavLink href="/debt"><button>Debts</button></NavLink>
+   
+</div>
+
 <NavLink href="/transaction"><button-back>Back</button-back></NavLink>
 
 <EditForm Model="transaction" OnValidSubmit="AddExpense">
+    <h1>Add Expense</h1>
     <div class="form-group">
+        <h1>Add Expense</h1>
+
         <label for="amount">Expense Amount:</label>
         <InputNumber @bind-Value="transaction.Amount" id="amount" required placeholder="Enter amount" />
     </div>
@@ -159,10 +168,6 @@
         ShowSuccessMessage = false;
     }
 
-    // private void OkayButtonPressedForError()
-    // {
-    //     ShowErrorMessage = false;
-    // }
 
     public class ExpenseTransaction
     {
@@ -212,6 +217,37 @@
         background-color: #263845;
         color: #fff;
     }
+
+    /* Navigation buttons (footer) */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-around;
+        background-color: #1C2833; /* Footer background */
+        padding: 10px 0; /* Add some padding */
+        position: fixed; /* Make it fixed to the bottom */
+        top: 0; /* Position at the bottom */
+        width: 100%; /* Full width */
+    }
+
+        /* Button styles */
+        .navigation-buttons button {
+            background-color: #1C2833;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /*Add transition effect */
+        }
+
+            .navigation-buttons button:hover {
+                background-color: #1DA1F2; /* Hover color */
+            }
+
+            .navigation-buttons button.active {
+                background-color: #121C21;
+            }
+
 
     button-back {
         position: fixed;

@@ -2,13 +2,24 @@
 @using System.Text.Json
 @using System.Linq
 
-<h1>Debts</h1>
+<div class="navigation-buttons">
+    <NavLink href="/income"><button>Add Income</button></NavLink>
+    <NavLink href="/expense"><button>Add Expense</button></NavLink>
+    <NavLink href="/debt"><button class="active">Debts</button></NavLink>
+  
+</div>
+
+
+
 <NavLink href="/transaction"><button-back>Back</button-back></NavLink>
 
-<h2>Add Debt</h2>
 
 <EditForm Model="newDebt" OnValidSubmit="AddDebt">
+	<h1>Debts</h1>
     <div class="form-group">
+        <h1>Debts</h1>
+        <h2>Add Debt</h2>
+
         <label for="amount">Debt Amount:</label>
         <InputNumber @bind-Value="newDebt.DebtAmount" id="amount" required placeholder="Enter amount" />
     </div>
@@ -225,6 +236,36 @@
             border-color: #1F94E0; /* Highlight on focus */
             box-shadow: 0 0 5px rgba(255, 255, 255, 0.2);
         }
+
+    /* Navigation buttons (footer) */
+    .navigation-buttons {
+        display: flex;
+        justify-content: space-around;
+        background-color: #1C2833; /* Footer background */
+        padding: 10px 0; /* Add some padding */
+        position: fixed; /* Make it fixed to the bottom */
+        top: 0; /* Position at the bottom */
+        width: 100%; /* Full width */
+    }
+
+        /* Button styles */
+        .navigation-buttons button {
+            background-color: #1C2833;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 3px;
+            color: #FFFFFF;
+            cursor: pointer;
+            transition: background-color 0.3s ease; /*Add transition effect */
+        }
+
+            .navigation-buttons button:hover {
+                background-color: #1DA1F2; /* Hover color */
+            }
+
+            .navigation-buttons button.active {
+                background-color: #121C21;
+            }
 
     button-back {
         position: fixed;
